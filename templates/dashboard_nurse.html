@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Nurse Dashboard{% endblock %}
+{% block content %}
+<h3>Dashboard Enfermero</h3>
+<table class="table">
+  <thead><tr><th>Nombre</th><th>Stock</th><th>Retirar</th></tr></thead>
+  <tbody>
+    {% for s in supplies %}
+      <tr>
+        <td>{{ s.name }}</td>
+        <td>{{ s.current_stock }}</td>
+        <td>
+          <form method="post" class="d-flex">
+            <input name="supply_id" type="hidden" value="{{ s.id }}">
+            <input name="amount" type="number" min="1" max="{{ s.current_stock }}"
+                   class="form-control form-control-sm me-1" placeholder="Cant." required>
+            <button class="btn btn-sm btn-primary">OK</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<hr>
+<h5>Últimos Movimientos</h5>
+<ul class="list-group">
+  {% for h in history %}
+    <li class="list-group-item">
+      {{ h.timestamp.strftime('%Y-%m-%d %H:%M') }} – {{ h.user.fullname }} – {{ h.supply.name }}: {{ h.amount }}
+      {% if h.note %}({{ h.note }}){% endif %}
+    </li>
+  {% endfor %}
+</ul>
+{% endblock %}

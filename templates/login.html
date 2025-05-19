@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-4">
+    <div class="card p-4 shadow-sm">
+      <h5 class="card-title text-center mb-3">Acceso</h5>
+      <form method="post">
+        <div class="mb-3">
+          <input type="text" class="form-control" name="username" placeholder="Usuario" required>
+        </div>
+        <div class="mb-3">
+          <input type="password" class="form-control" name="password" placeholder="Contraseña" required>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Ingresar</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

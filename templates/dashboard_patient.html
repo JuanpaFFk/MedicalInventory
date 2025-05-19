@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Patient Dashboard{% endblock %}
+{% block content %}
+<h3>Historial de Medicación</h3>
+<ul class="list-group">
+  {% for h in history %}
+    <li class="list-group-item">
+      {{ h.timestamp.strftime('%Y-%m-%d') }} – {{ h.supply.name }}: {{ h.amount }}
+      {% if h.note %}({{ h.note }}){% endif %}
+    </li>
+  {% endfor %}
+</ul>
+{% endblock %}
