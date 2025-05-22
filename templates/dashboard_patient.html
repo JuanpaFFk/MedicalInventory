@@ -1,41 +1,82 @@
 {% extends 'base.html' %}
-{% block title %}Patient Dashboard{% endblock %}
+{% block title %}Inventario Médico – Paciente{% endblock %}
 {% block content %}
-<h3>Registrar Dosis</h3>
-<form method="post" class="mb-4">
-  <div class="row">
-    <div class="col">
-      <select name="supply_id" class="form-select" required>
-        <option value="">Seleccionar Medicamento</option>
-        {% for s in supplies %}
-          <option value="{{ s.id }}">{{ s.name }}</option>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-primary text-white d-flex align-items-center">
+    <i class="bi bi-heart-pulse me-2"></i>
+    <h5 class="mb-0">Registro de Dosis - Paciente</h5>
+  </div>
+  <div class="card-body">
+    <div class="card border-info mb-4">
+      <div class="card-body">
+        <h6 class="card-title text-info">
+          <i class="bi bi-plus-circle me-1"></i>Nueva Programación de Dosis
+        </h6>
+        <form method="post" class="row g-3 align-items-end">
+          <div class="col-md-4">
+            <label class="form-label"><i class="bi bi-capsule me-1"></i>Medicamento</label>
+            <select name="supply_id" class="form-select" required>
+              <option value="">Selecciona</option>
+              {% for s in supplies %}
+              <option value="{{ s.id }}">{{ s.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label"><i class="bi bi-clock me-1"></i>Intervalo</label>
+            <div class="input-group">
+              <input name="interval_value" type="number" class="form-control" placeholder="Cantidad" min="1" required>
+              <select name="interval_unit" class="form-select">
+                <option value="hours">Horas</option>
+                <option value="days">Días</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label"><i class="bi bi-chat-left-text me-1"></i>Nota</label>
+            <input name="note" type="text" class="form-control" placeholder="Ej: Antes de comer">
+          </div>
+          <div class="col-auto">
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-save me-1"></i>Registrar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card border-info">
+      <div class="card-header bg-info text-dark">
+        <i class="bi bi-clock-history me-2"></i>Historial de Dosis
+      </div>
+      <ul class="list-group list-group-flush">
+        {% for h in history %}
+        <li class="list-group-item">
+          <div class="d-flex justify-content-between">
+            <div>
+              <div class="fw-bold text-primary">
+                <i class="bi bi-capsule me-1"></i>{{ h.supply.name }}
+              </div>
+              <small class="text-muted">
+                <i class="bi bi-arrow-repeat me-1"></i>Cada {{ h.dosage_type }}
+                {% if h.note %}<br><i class="bi bi-chat-left-text me-1"></i>{{ h.note }}{% endif %}
+              </small>
+            </div>
+            <div class="text-end">
+              <small class="d-block text-muted">
+                <i class="bi bi-calendar me-1"></i>{{ h.timestamp.strftime('%Y-%m-%d %H:%M') }}
+              </small>
+              <small class="text-success">
+                <i class="bi bi-alarm me-1"></i>Próxima: {{ h.next_dose_date.strftime('%Y-%m-%d %H:%M') }}
+              </small>
+            </div>
+          </div>
+        </li>
         {% endfor %}
-      </select>
-    </div>
-    <div class="col">
-      <input type="text" name="dosage_type" class="form-control" placeholder="Ej: Cada 8 horas" required>
-    </div>
-    <div class="col">
-      <input type="text" name="note" class="form-control" placeholder="Nota (opcional)">
-    </div>
-    <div class="col-auto">
-      <button type="submit" class="btn btn-primary">Registrar</button>
+      </ul>
     </div>
   </div>
-</form>
-
-<hr>
-<h3>Historial de Dosis</h3>
-<ul class="list-group">
-  {% for h in history %}
-    <li class="list-group-item">
-      <strong>{{ h.timestamp.strftime('%Y-%m-%d %H:%M') }}</strong> – 
-      {{ h.supply.name }} – 
-      Dosis: {{ h.dosage_type }} 
-      {% if h.note %}({{ h.note }}){% endif %}
-      <br>
-      <small>Próxima dosis: {{ h.next_dose_date.strftime('%Y-%m-%d %H:%M') }}</small>
-    </li>
-  {% endfor %}
-</ul>
+</div>
 {% endblock %}
+

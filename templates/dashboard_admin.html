@@ -1,42 +1,89 @@
 {% extends 'base.html' %}
-{% block title %}Admin Dashboard{% endblock %}
+{% block title %}Inventario Médico – Administrador{% endblock %}
 {% block content %}
-<h3>Dashboard Admin</h3>
-<table class="table">
-  <thead>
-    <tr><th>Nombre</th><th>Stock</th><th>Mínimo</th><th>Acciones</th></tr>
-  </thead>
-  <tbody>
-    {% for s in supplies %}
-      <tr class="{% if s.current_stock <= s.min_stock %}table-danger{% endif %}">
-        <td>{{ s.name }}</td>
-        <td>{{ s.current_stock }}</td>
-        <td>{{ s.min_stock }}</td>
-        <td>
-          <!-- Enlace a formulario de edición dedicado -->
-          <a href="{{ url_for('edit_item', id=s.id) }}" class="btn btn-sm btn-warning">
-            Editar
-          </a>
-          <!-- Formulario eliminación -->
-          <form class="d-inline" method="post">
-            <input type="hidden" name="action" value="delete">
-            <input type="hidden" name="id" value="{{ s.id }}">
-            <button class="btn btn-sm btn-danger">Eliminar</button>
-          </form>
-        </td>
-      </tr>
-    {% endfor %}
-  </tbody>
-</table>
-<hr>
-<h5>Agregar Insumo</h5>
-<form method="post">
-  <input type="hidden" name="action" value="add">
-  <div class="row">
-    <div class="col"><input name="name" class="form-control" placeholder="Nombre" required></div>
-    <div class="col"><input name="min_stock" type="number" class="form-control" placeholder="Mínimo" required></div>
-    <div class="col"><input name="current_stock" type="number" class="form-control" placeholder="Actual" required></div>
-    <div class="col-auto"><button class="btn btn-success">Agregar</button></div>
+
+<!-- Panel Administrador en tarjeta -->
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-primary text-white d-flex align-items-center">
+    <i class="bi bi-clipboard-data me-2"></i>
+    <h5 class="mb-0">Panel Administrador</h5>
   </div>
-</form>
+  <div class="card-body">
+    <!-- Tabla de insumos -->
+    <table class="table table-hover align-middle mb-4">
+      <thead class="table-light">
+        <tr>
+          <th><i class="bi bi-box-seam"></i> Nombre</th>
+          <th><i class="bi bi-stack"></i> Stock Actual</th>
+          <th><i class="bi bi-info-circle"></i> Stock Mínimo</th>
+          <th><i class="bi bi-gear"></i> Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in supplies %}
+        {% set diff = s.current_stock - s.min_stock %}
+        <tr class="{% if diff <= 0 %}table-danger{% elif diff <= 3 %}table-warning{% else %}table-success{% endif %}">
+          <td>{{ s.name }}</td>
+          <td>{{ s.current_stock }}</td>
+          <td>{{ s.min_stock }}</td>
+          <td>
+            <a href="{{ url_for('edit_item', id=s.id) }}" class="btn btn-sm btn-outline-warning me-1">
+              <i class="bi bi-pencil-fill"></i>
+            </a>
+            <form class="d-inline" method="post">
+              <input type="hidden" name="action" value="delete">
+              <input type="hidden" name="id" value="{{ s.id }}">
+              <button class="btn btn-sm btn-outline-danger">
+                <i class="bi bi-trash-fill"></i>
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <!-- Form añadir nuevo insumo -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h6><i class="bi bi-plus-circle me-1"></i> Agregar Nuevo Insumo</h6>
+        <form method="post" class="row g-2 align-items-end mt-2">
+          <input type="hidden" name="action" value="add">
+          <div class="col-md-4">
+            <label class="form-label">Nombre</label>
+            <input name="name" class="form-control" placeholder="Nombre del insumo" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Stock Mínimo</label>
+            <input name="min_stock" type="number" class="form-control" min="0" placeholder="Mínimo" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Stock Actual</label>
+            <input name="current_stock" type="number" class="form-control" min="0" placeholder="Actual" required>
+          </div>
+          <div class="col-auto">
+            <button class="btn btn-success">
+              <i class="bi bi-save-fill"></i> Guardar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Historial de uso completo para admin -->
+    <h6 class="mb-2"><i class="bi bi-clock-history"></i> Historial de Uso (Todos los movimientos)</h6>
+    <ul class="list-group">
+      {% for h in history %}
+      <li class="list-group-item d-flex justify-content-between align-items-start">
+        <div>
+          <div class="fw-bold">{{ h.user.fullname }} – {{ h.supply.name }}</div>
+          <small>{{ h.timestamp.strftime('%Y-%m-%d %H:%M') }} – Cantidad: {{ h.amount }}{% if h.note %}, Nota: {{ h.note }}{% endif %}</small>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
 {% endblock %}
+

@@ -62,6 +62,8 @@ def logout():
 @roles_required('admin')
 def dashboard_admin():
     supplies = MedicalSupply.query.all()
+    history = UsageHistory.query.order_by(UsageHistory.timestamp.desc()).limit(20)
+
     if request.method == 'POST':
         op = request.form['action']
         if op == 'add':
@@ -82,7 +84,8 @@ def dashboard_admin():
         db.session.commit()
         flash('Operación completada', 'success')
         return redirect(url_for('dashboard_admin'))
-    return render_template('dashboard_admin.html', supplies=supplies)
+
+    return render_template('dashboard_admin.html', supplies=supplies, history=history)
 
 # Nueva ruta para editar un insumo (Formulario dedicado)
 @app.route('/edit/<int:id>', methods=['GET'])
@@ -117,29 +120,70 @@ def dashboard_nurse():
         return redirect(url_for('dashboard_nurse'))
     return render_template('dashboard_nurse.html', supplies=supplies, history=history)
 
+
 @app.route('/dashboard_patient', methods=['GET','POST'])
 @roles_required('patient')
 def dashboard_patient():
     if request.method == 'POST':
-        supply_id = int(request.form['supply_id'])
-        dosage_type = request.form['dosage_type']
+        value = int(request.form['interval_value'])
+        unit = request.form['interval_unit']  # 'hours' o 'days'
         note = request.form.get('note', '')
+
+        # Calcula el delta
+        if unit == 'hours':
+            delta = timedelta(hours=value)
+            label = f"Cada {value} horas"
+        else:
+            delta = timedelta(days=value)
+            label = f"Cada {value} días"
+
         record = UsageHistory(
             user_id=current_user.id,
-            supply_id=supply_id,
+            supply_id=int(request.form['supply_id']),
             amount=1,
-            dosage_type=dosage_type,
+            dosage_type=label,
             note=note,
-            next_dose_date=datetime.utcnow() + timedelta(days=1)
+            next_dose_date=datetime.utcnow() + delta
         )
         db.session.add(record)
         db.session.commit()
         flash('Dosis registrada', 'success')
         return redirect(url_for('dashboard_patient'))
 
-    history = UsageHistory.query.filter_by(user_id=current_user.id).order_by(UsageHistory.timestamp.desc()).limit(20)
+    # GET
+    history = UsageHistory.query.filter_by(user_id=current_user.id)\
+               .order_by(UsageHistory.timestamp.desc()).limit(20)
     supplies = MedicalSupply.query.all()
     return render_template('dashboard_patient.html', history=history, supplies=supplies)
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        fullname = request.form['fullname']
+        cedula = request.form['cedula']
+        username = request.form['username']
+        password = request.form['password']
+        role = request.form['role']
+
+        existing_user = User.query.filter_by(username=username).first()
+        if existing_user:
+            flash('El usuario ya existe.', 'warning')
+        else:
+            new_user = User(
+                fullname=fullname,
+                cedula=cedula,
+                username=username,
+                role=role
+            )
+            new_user.set_password(password)
+            db.session.add(new_user)
+            db.session.commit()
+            flash('Usuario registrado exitosamente.', 'success')
+            return redirect(url_for('login'))
+
+    return render_template('register.html')
+
+
 if __name__ == '__main__':
     app.run(debug=True)
 
