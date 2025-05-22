@@ -1,34 +1,63 @@
 {% extends 'base.html' %}
-{% block title %}Nurse Dashboard{% endblock %}
+{% block title %}Inventario Médico – Enfermero{% endblock %}
 {% block content %}
-<h3>Dashboard Enfermero</h3>
-<table class="table">
-  <thead><tr><th>Nombre</th><th>Stock</th><th>Retirar</th></tr></thead>
-  <tbody>
-    {% for s in supplies %}
-      <tr>
-        <td>{{ s.name }}</td>
-        <td>{{ s.current_stock }}</td>
-        <td>
-          <form method="post" class="d-flex">
-            <input name="supply_id" type="hidden" value="{{ s.id }}">
-            <input name="amount" type="number" min="1" max="{{ s.current_stock }}"
-                   class="form-control form-control-sm me-1" placeholder="Cant." required>
-            <button class="btn btn-sm btn-primary">OK</button>
-          </form>
-        </td>
-      </tr>
-    {% endfor %}
-  </tbody>
-</table>
-<hr>
-<h5>Últimos Movimientos</h5>
-<ul class="list-group">
-  {% for h in history %}
-    <li class="list-group-item">
-      {{ h.timestamp.strftime('%Y-%m-%d %H:%M') }} – {{ h.user.fullname }} – {{ h.supply.name }}: {{ h.amount }}
-      {% if h.note %}({{ h.note }}){% endif %}
-    </li>
-  {% endfor %}
-</ul>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-primary text-white d-flex align-items-center">
+    <i class="bi bi-capsule-pill me-2"></i>
+    <h5 class="mb-0">Registro de Salida - Enfermería</h5>
+  </div>
+  <div class="card-body">
+    <table class="table table-hover align-middle">
+      <thead class="table-info">
+        <tr>
+          <th><i class="bi bi-capsule me-2"></i>Medicamento</th>
+          <th><i class="bi bi-boxes me-2"></i>En Stock</th>
+          <th><i class="bi bi-clipboard-minus me-2"></i>Retirar</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in supplies %}
+        <tr class="{% if s.current_stock <= s.min_stock %}table-danger{% elif s.current_stock - s.min_stock <= 3 %}table-warning{% endif %}">
+          <td>{{ s.name }}</td>
+          <td>{{ s.current_stock }}</td>
+          <td>
+            <form method="post" class="d-flex align-items-center">
+              <input name="supply_id" type="hidden" value="{{ s.id }}">
+              <input name="amount" type="number" min="1" max="{{ s.current_stock }}"
+                     class="form-control form-control-sm me-2" placeholder="Cant." required>
+              <input name="note" type="text" class="form-control form-control-sm me-2" placeholder="Nota de uso">
+              <button class="btn btn-sm btn-primary">
+                <i class="bi bi-save"></i>
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="card mt-4 border-info">
+      <div class="card-header bg-info text-dark">
+        <i class="bi bi-clock-history me-2"></i>Historial de Uso
+      </div>
+      <ul class="list-group list-group-flush">
+        {% for h in history %}
+        <li class="list-group-item d-flex justify-content-between align-items-start">
+          <div>
+            <div class="fw-bold text-primary">{{ h.user.fullname }} – {{ h.supply.name }}</div>
+            <small class="text-muted">
+              <i class="bi bi-calendar me-1"></i>{{ h.timestamp.strftime('%Y-%m-%d %H:%M') }}
+              · Cantidad: {{ h.amount }}
+              {% if h.note %}<br><i class="bi bi-chat-left-text me-1"></i>{{ h.note }}{% endif %}
+            </small>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
 {% endblock %}
+
+
