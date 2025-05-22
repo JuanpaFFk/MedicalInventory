@@ -33,5 +33,7 @@ class UsageHistory(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     amount = db.Column(db.Integer, nullable=False)
     note = db.Column(db.String(200))
+    dosage_type = db.Column(db.String(50))  # Ej: "Cada 8 horas", "Cada 3 días"
+    next_dose_date = db.Column(db.DateTime) # Próxima dosis
     user = db.relationship('User')
     supply = db.relationship('MedicalSupply')
